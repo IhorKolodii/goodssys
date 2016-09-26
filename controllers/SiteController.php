@@ -7,7 +7,10 @@ use yii\filters\AccessControl;
 use yii\web\Controller;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
-use app\models\ContactForm;
+use app\models\RegisterForm;
+use app\models\GoodsManager;
+use yii\bootstrap\ActiveForm;
+use yii\web\Response;
 
 class SiteController extends Controller
 {
@@ -19,12 +22,17 @@ class SiteController extends Controller
         return [
             'access' => [
                 'class' => AccessControl::className(),
-                'only' => ['logout'],
+                'only' => ['logout','login','register','index'],
                 'rules' => [
                     [
-                        'actions' => ['logout'],
+                        'actions' => ['logout','index'],
                         'allow' => true,
                         'roles' => ['@'],
+                    ],
+                    [
+                        'actions' => ['register','login'],
+                        'allow' => true,
+                        'roles' => ['?'],
                     ],
                 ],
             ],
@@ -46,21 +54,26 @@ class SiteController extends Controller
             'error' => [
                 'class' => 'yii\web\ErrorAction',
             ],
-            'captcha' => [
-                'class' => 'yii\captcha\CaptchaAction',
-                'fixedVerifyCode' => YII_ENV_TEST ? 'testme' : null,
-            ],
         ];
     }
 
     /**
-     * Displays homepage.
+     * Displays main app page.
      *
      * @return string
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        if (Yii::$app->request->isAjax) {
+            $data = GoodsManager::processAjaxRequest(Yii::$app->request->getRawBody());
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return $data;
+        }
+        
+        $model = new GoodsManager();
+        $model->prepareManager();
+        
+        return $this->render('index', ['manager' => $model]);
     }
 
     /**
@@ -70,11 +83,16 @@ class SiteController extends Controller
      */
     public function actionLogin()
     {
+        $model = new LoginForm();
+        if (Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())) {
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ActiveForm::validate($model);
+        }
+        
         if (!Yii::$app->user->isGuest) {
             return $this->goHome();
         }
-
-        $model = new LoginForm();
+        
         if ($model->load(Yii::$app->request->post()) && $model->login()) {
             return $this->goBack();
         }
@@ -94,32 +112,31 @@ class SiteController extends Controller
 
         return $this->goHome();
     }
-
+    
     /**
-     * Displays contact page.
+     * Register action.
      *
      * @return string
      */
-    public function actionContact()
+    public function actionRegister()
     {
-        $model = new ContactForm();
-        if ($model->load(Yii::$app->request->post()) && $model->contact(Yii::$app->params['adminEmail'])) {
-            Yii::$app->session->setFlash('contactFormSubmitted');
-
-            return $this->refresh();
+        $model = new RegisterForm();
+        if (Yii::$app->request->isAjax && $model->load(Yii::$app->request->post())) {
+            Yii::$app->response->format = Response::FORMAT_JSON;
+            return ActiveForm::validate($model);
         }
-        return $this->render('contact', [
+        
+        if (!Yii::$app->user->isGuest) {
+            return $this->goHome();
+        }
+
+        if ($model->load(Yii::$app->request->post()) && $model->register()) {
+            $email = $model->email;
+            return $this->render('registered',['username' => $email]);
+        }
+        return $this->render('register', [
             'model' => $model,
         ]);
     }
 
-    /**
-     * Displays about page.
-     *
-     * @return string
-     */
-    public function actionAbout()
-    {
-        return $this->render('about');
-    }
 }
