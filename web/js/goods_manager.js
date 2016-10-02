@@ -372,6 +372,59 @@ $(document).ready( function() {
         }
     });
     
+    $("#button-log1").click( function() {
+        $("#log-error").text('');
+        $('#log-list').empty();
+        var selection = getSingleSelection('#p1');
+        if (!jQuery.isEmptyObject(selection)) {
+            var splitted = selection.id.split("-");
+            var getLogData = {};
+            getLogData['id'] = splitted[2];
+            getLogData['type'] = splitted[1];
+            var data = {
+                action: 'getlog',
+                data: getLogData
+            };
+            $.ajax({
+                url: '/site/index',
+                type: 'post',
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function(data){
+                    var receivedData = jQuery.parseJSON(data);
+                    $("#log-name").text(receivedData.name);
+                    if(receivedData.log.length) {
+                        $.each(receivedData.log, function( index, value ) {
+                            
+                            $("#log-list").append('<div class="list-group-item">User: '+value.user+', Action: '+value.action+', Item name: '+value.entity_name+'</div>');
+                            
+                        });
+                    }
+                    if ((receivedData.error)) {
+                        alert(receivedData.error);
+                    }
+                },
+                failure: function(errMsg) {
+                    alert(errMsg);
+                }
+            });
+            
+            if (splitted[1] === 'cat') {
+                $("#log-type").text('category');
+            } else {
+                $("#log-type").text('item');
+            }
+            $("#log-path").text($("#p1-path").text());
+        } else {
+            $("#log-name").text('');
+            $("#log-type").text('');
+            $("#log-path").text('');
+            $("#log-error").text('No item selected');
+        }
+    });
+    
+    
     $body = $("body");
     $(document).on({
         ajaxStart: function() { $body.addClass("loading");    },

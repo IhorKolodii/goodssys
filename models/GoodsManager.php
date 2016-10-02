@@ -1,9 +1,11 @@
 <?php
 namespace app\models;
 
+use Yii;
 use yii\base\Model;
 use app\models\Goods;
 use app\models\GoodsCategories;
+use app\models\Log;
 
 /**
  * Goods manager model
@@ -156,6 +158,10 @@ class GoodsManager extends Model
         $message = '';
         $from = $data['from'];
         $to = $data['to'];
+        $categoriesToUpdate = [];
+        $itemsToUpdate = [];
+        $catsToMove = [];
+        $itemsToMove = [];
         $from_to_cats = GoodsCategories::findAll([$from, $to]);
         if (!(count($from_to_cats) < 2)) {
             $goods_categories = $data['entries']['categories'];
@@ -177,6 +183,7 @@ class GoodsManager extends Model
                     }
                     $toUpdate[] = $oneCatToMove['id'];
                 }
+                $categoriesToUpdate = $toUpdate;
                 $goods_categories_update = GoodsCategories::getDb()->createCommand()->update('goods_categories', ['parent' => $to], ['id' => $toUpdate]);
             }
             if (!empty($goods)) {
@@ -192,10 +199,12 @@ class GoodsManager extends Model
                     }
                     $toUpdate[] = $oneItemToMove['id'];
                 }
+                $itemsToUpdate = $toUpdate;
                 $goods_update = Goods::getDb()->createCommand()->update('goods', ['parent' => $to], ['id' => $toUpdate]);
             }
             
             $transaction = GoodsCategories::getDb()->beginTransaction();
+            $success = true;
             try {
                 if (!empty($goods_categories)) {
                     $goods_categories_update->execute();
@@ -208,6 +217,10 @@ class GoodsManager extends Model
                 $transaction->rollBack();
                 self::$debug['db'] = $e->getMessage();
                 $error .= 'Error: DB write error.';
+                $success = false;
+            }
+            if ($success) {
+                self::logMove($categoriesToUpdate, $itemsToUpdate, $catsToMove, $itemsToMove, $to);
             }
         } else {
             $error = 'Error: Wrong source or destination directory.';
@@ -290,6 +303,54 @@ class GoodsManager extends Model
         return $toReturn;
     }
     
+    public static function getlogAction($data)
+    {
+        $error = '';
+        $message = '';
+        $id = $data['id'];
+        $type = $data['type'];
+        $item = [];
+        if ($type == 'cat') {
+            $item = GoodsCategories::findOne($id);
+            $selector = 'goods_category_id';
+        } else {
+            $item = Goods::findOne($id);
+            $selector = 'goods_id';
+        }
+        
+        if (empty($item)) {
+            $error = "Error: Can't find item in DB.";
+        } else {
+            $toReturn['name'] = $item->name;
+            $logEntries = Log::find()->where([$selector => $id])->asArray()->all();
+            // TODO complete categories names adding
+            /*
+            $categoryIds = [];
+            foreach ($logEntries as $logEntry) {
+                $categoryIds[] = trim(end(explode(':', $logEntry['action'])));
+            }
+            if (!empty($categoryIds)) {
+                $categories = GoodsCategories::find()->where(['id' => $categoryIds])->asArray()->all();
+                foreach ($logEntries as $logEntry) {
+                    $exploded = explode(':', $logEntry['action']);
+                    if (isset($categories[''])) {
+                        
+                    }
+                    end($array);
+                    $key = key($array);
+                }
+            }
+            */
+            $toReturn['log'] = $logEntries;
+            
+        }
+        $toReturn['message'] = $message;
+        $toReturn['error'] = $error;
+        return $toReturn;
+    }
+    
+    
+    
     public static function saveModelUsingTransaction(\yii\db\ActiveRecord $model)
     {
         $transaction = $model->getDb()->beginTransaction();
@@ -348,5 +409,29 @@ class GoodsManager extends Model
     {
         $this->rootCategories = GoodsCategories::find()->where(['parent' => 1])->asArray()->orderBy('name')->all();
         $this->rootGoods = Goods::find()->where(['parent' => 1])->asArray()->orderBy('name')->all();
+    }
+    
+    static protected function logMove($categoriesToUpdate, $itemsToUpdate, $catsToMove, $itemsToMove, $to)
+    {
+        foreach ($catsToMove as $oneCategoryFromDb) {
+            if (in_array($oneCategoryFromDb['id'], $categoriesToUpdate)) {
+                $logEntry = new Log();
+                $logEntry->user = Yii::$app->user->identity->email;
+                $logEntry->action = "Moved category, new category: ".$to;
+                $logEntry->goods_category_id = $oneCategoryFromDb['id'];
+                $logEntry->entity_name = $oneCategoryFromDb['name'];
+                $logEntry->save();
+            }
+        }
+        foreach ($itemsToMove as $oneItemFromDb) {
+            if (in_array($oneItemFromDb['id'], $itemsToUpdate)) {
+                $logEntry = new Log();
+                $logEntry->user = Yii::$app->user->identity->email;
+                $logEntry->action = "Moved item, new category: ".$to;
+                $logEntry->goods_id = $oneItemFromDb['id'];
+                $logEntry->entity_name = $oneItemFromDb['name'];
+                $logEntry->save();
+            }
+        }
     }
 }

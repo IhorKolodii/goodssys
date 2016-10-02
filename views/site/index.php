@@ -43,6 +43,7 @@ $this->title = 'Smiss test task';
                             <div class="btn btn-primary" data-toggle="modal" data-target="#copy-move-elements" id="button-move1">Move</div>
                             <div class="btn btn-primary" data-toggle="modal" data-target="#rename-element" id="button-rename1">Rename</div>
                             <div class="btn btn-danger" data-toggle="modal" data-target="#remove-elements" id="button-remove1">Delete</div>
+                            <div class="btn btn-info" data-toggle="modal" data-target="#log" id="button-log1">Log</div>
                         </div>
                     </div>
                 </div>
@@ -79,6 +80,7 @@ $this->title = 'Smiss test task';
                             <div class="btn btn-primary" data-toggle="modal" data-target="#copy-move-elements" id="button-move2">Move</div>
                             <div class="btn btn-primary" data-toggle="modal" data-target="#rename-element" id="button-rename2">Rename</div>
                             <div class="btn btn-danger" data-toggle="modal" data-target="#remove-elements" id="button-remove2">Delete</div>
+                            <div class="btn btn-info" data-toggle="modal" data-target="#log" id="button-log2">Log</div>
                         </div>
                     </div>
                 </div>
@@ -230,6 +232,40 @@ $this->title = 'Smiss test task';
             <div class="modal-footer">
                 <button class="btn btn-danger" type="button" id="remove">Delete</button>
                 <button class="btn btn-default" type="button" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+            
+<div class="modal fade" id="log">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Log</h4>
+            </div>
+            <div class="modal-body">
+                <div class="panel-group">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <strong>Item:</strong> <span id="log-name"></span><br>
+                            <strong>Type:</strong> <span id="log-type"></span><br>
+                            <strong>Path:</strong> <span id="log-path"></span><br>
+                        </div>
+                    </div>
+                </div>
+                <h5>Events:</h5>
+                <div class="panel panel-primary">
+                    <div class="panel-body">
+                        <div class="list-group modal-panel" id="log-list">
+                            
+                        </div>
+                    </div>
+                </div>
+                <div id="log-error" class="bg-danger"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" type="button" data-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

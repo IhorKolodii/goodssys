@@ -11,6 +11,7 @@ use app\models\RegisterForm;
 use app\models\GoodsManager;
 use yii\bootstrap\ActiveForm;
 use yii\web\Response;
+use app\models\Log;
 
 class SiteController extends Controller
 {
