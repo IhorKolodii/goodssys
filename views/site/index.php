@@ -5,7 +5,7 @@ use yii\web\View;
 GoodsManagerAsset::register($this);
 /* @var $this yii\web\View */
 
-$this->title = 'My Yii Application';
+$this->title = 'Smiss test task';
 ?>
 <div class="row">
     <div class="text-center">
@@ -41,8 +41,8 @@ $this->title = 'My Yii Application';
                             <div class="btn btn-success" data-toggle="modal" data-target="#create-element" id="button-create1">New</div>
                             <div class="btn btn-primary" data-toggle="modal" data-target="#copy-move-elements" id="button-copy1">Copy</div>
                             <div class="btn btn-primary" data-toggle="modal" data-target="#copy-move-elements" id="button-move1">Move</div>
-                            <div class="btn btn-primary">Rename</div>
-                            <div class="btn btn-danger">Delete</div>
+                            <div class="btn btn-primary" data-toggle="modal" data-target="#rename-element" id="button-rename1">Rename</div>
+                            <div class="btn btn-danger" data-toggle="modal" data-target="#remove-elements" id="button-remove1">Delete</div>
                         </div>
                     </div>
                 </div>
@@ -77,8 +77,8 @@ $this->title = 'My Yii Application';
                             <div class="btn btn-success" data-toggle="modal" data-target="#create-element" id="button-create2">New</div>
                             <div class="btn btn-primary" data-toggle="modal" data-target="#copy-move-elements" id="button-copy2">Copy</div>
                             <div class="btn btn-primary" data-toggle="modal" data-target="#copy-move-elements" id="button-move2">Move</div>
-                            <div class="btn btn-primary">Rename</div>
-                            <div class="btn btn-danger">Delete</div>
+                            <div class="btn btn-primary" data-toggle="modal" data-target="#rename-element" id="button-rename2">Rename</div>
+                            <div class="btn btn-danger" data-toggle="modal" data-target="#remove-elements" id="button-remove2">Delete</div>
                         </div>
                     </div>
                 </div>
@@ -109,7 +109,7 @@ $this->title = 'My Yii Application';
                 </div>
                 <div class="input-group">
                     <span class="input-group-addon" id="new_item_name_descr">Name</span>
-                    <input type="text" class="form-control" aria-describedby="new_item_name_descr" id="new_item_name">
+                    <input type="text" class="form-control" aria-describedby="new_item_name_descr" id="new_item_name" data-panel="">
                 </div>
                 <h5>Type</h5>
                 <form class="form-group" id="type-selector">
@@ -164,6 +164,71 @@ $this->title = 'My Yii Application';
             <div class="modal-footer">
                 <button class="btn btn-success" type="button" id="move">Move</button>
                 <button class="btn btn-success" type="button" id="copy">Copy</button>
+                <button class="btn btn-default" type="button" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="rename-element">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Rename element</h4>
+            </div>
+            <div class="modal-body">
+                <div class="panel-group">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">Path: <span id="rename_item_path"></span></div>
+                    </div>
+                </div>
+                <form class="form-group">
+                    <div class="input-group">
+                        <span class="input-group-addon" id="rename_item_name_descr">Name</span>
+                        <input type="text" class="form-control" aria-describedby="rename_item_name_descr" id="rename_item_name">
+                    </div>
+                </form>
+                <div id="rename-error" class="bg-danger">
+                    
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-success" type="button" id="rename">Rename</button>
+                <button class="btn btn-default" type="button" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="remove-elements">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button class="close" type="button" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Remove elements</h4>
+                <p class=" bg-danger">Warning: Items will be removed permanently!</p>
+            </div>
+            <div class="modal-body">
+                <div class="panel-group">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <strong>Path:</strong> <span id="remove_path"></span><br>
+                        </div>
+                    </div>
+                </div>
+                <h5>Items:</h5>
+                <div class="panel panel-primary">
+                    <div class="panel-body">
+                        <div class="list-group modal-panel" id="remove-list">
+                            
+                        </div>
+                    </div>
+                </div>
+                <div id="remove-error" class="bg-danger"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-danger" type="button" id="remove">Delete</button>
                 <button class="btn btn-default" type="button" data-dismiss="modal">Cancel</button>
             </div>
         </div>

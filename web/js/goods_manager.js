@@ -8,17 +8,17 @@ $(document).ready( function() {
             $("#create-error").text("Name can't be empty");
             return false;
         }
-        
-        var elements = (document.getElementsByClassName('selectable-row'));
+        var panel = $("#new_item_name").data("panel");
+        var elements = (document.querySelectorAll(panel+' .selectable-row'));
         var names = [];
         for (var i=0; typeof(elements[i])!=='undefined'; i++) {
             names.push(elements[i].getAttribute('data-name'));
         }
-        var type = $('input[name=new_type]:checked', '#type-selector').val();
         if ($.inArray(name, names) !== -1) {
             $("#create-error").text("Name already exists, use another name.");
             return false;
         }
+        var type = $('input[name=new_type]:checked', '#type-selector').val();
         var path = $('#new_item_path').data('new_item_path');
         var p1_cat = $('#p1-path').data('category');
         var p2_cat = $('#p2-path').data('category');
@@ -90,11 +90,71 @@ $(document).ready( function() {
         $('#copy-move-elements').modal('toggle');
     });
     
+    $("#rename").click( function() {
+        var id = $("#rename_item_name").data("id");
+        var type = $("#rename_item_name").data("type");
+        var name = $("#rename_item_name").val();
+        if (!name) {
+            $("#rename-error").text("Name can't be empty");
+            return false;
+        }
+        var panel = $("#rename_item_name").data("panel");
+        var elements = (document.querySelectorAll(panel+' .selectable-row'));
+        var names = [];
+        for (var i=0; typeof(elements[i])!=='undefined'; i++) {
+            names.push(elements[i].getAttribute('data-name'));
+        }
+        if ($.inArray(name, names) !== -1) {
+            $("#rename-error").text("Name already exists, use another name.");
+            return false;
+        }
+
+        var p1_cat = $('#p1-path').data('category');
+        var p2_cat = $('#p2-path').data('category');
+        var renameInfo = {};
+        renameInfo['id'] = id;
+        renameInfo['type'] = type;
+        renameInfo['name'] = name;
+        renameInfo['p1_cat'] = p1_cat;
+        renameInfo['p2_cat'] = p2_cat;
+        var data = {
+            action: 'rename',
+            data: renameInfo
+        };
+        sendAjaxRequest(data);
+        $('#rename-element').modal('toggle');
+    });
+    
+    $("#remove").click( function() {
+
+        var entries = {categories:[], items:[]};
+        $('#remove-list div').each(function() {
+            if ($(this).data('type') === 'cat') {
+                entries['categories'].push($(this).data('id'));
+            } else if ($(this).data('type') === 'g') {
+                entries['items'].push($(this).data('id'));
+            }
+        });
+        var p1_cat = $('#p1-path').data('category');
+        var p2_cat = $('#p2-path').data('category');
+        var removeInfo = {};
+        removeInfo['entries'] = entries;
+        removeInfo['p1_cat'] = p1_cat;
+        removeInfo['p2_cat'] = p2_cat;
+        var data = {
+            action: 'remove',
+            data: removeInfo
+        };
+        sendAjaxRequest(data);
+        $('#remove-elements').modal('toggle');
+    });
+    
     $("#button-create1").click( function () {
         $("#new_item_name").val("");
         $("#create-error").text("");
         $("#new_item_path").text($("#p1-path").text());
         $("#new_item_path").data('new_item_path', $("#p1-path").data("category"));
+        $("#new_item_name").data("panel",'#p1');
     });
     
     $("#button-create2").click( function () {
@@ -102,6 +162,7 @@ $(document).ready( function() {
         $("#create-error").text("");
         $("#new_item_path").text($("#p2-path").text());
         $("#new_item_path").data('new_item_path', $("#p2-path").data("category"));
+        $("#new_item_name").data("panel",'#p2');
     });
     
     $("#button-copy1").click( function () {
@@ -114,17 +175,24 @@ $(document).ready( function() {
         $("#copy").show();
         $("#copy-descr").show();
         $("#copy-move").text("Copy elements");
+        $("#copy-error").text("");
         var selectionList = getSelection('#p1');
-        $.each(selectionList, function( index, value ) {
-            var splitted = index.split("-");
-            var icon = '';
-            if (splitted[1] === 'cat') {
-                icon = '<i class="glyphicon glyphicon-folder-open color-yellow"></i>&nbsp; '
-            } else {
-                icon = '<i class="glyphicon glyphicon-file color-gray"></i>&nbsp; '
-            }
-            $("#copy-list").append('<div class="list-group-item" data-id="'+splitted[2]+'" data-type="'+splitted[1]+'">'+icon+value+'</div>');
-        });
+        if (!jQuery.isEmptyObject(selectionList)) {
+            $.each(selectionList, function( index, value ) {
+                var splitted = index.split("-");
+                var icon = '';
+                if (splitted[1] === 'cat') {
+                    icon = '<i class="glyphicon glyphicon-folder-open color-yellow"></i>&nbsp; '
+                } else {
+                    icon = '<i class="glyphicon glyphicon-file color-gray"></i>&nbsp; '
+                }
+                $("#copy-list").append('<div class="list-group-item" data-id="'+splitted[2]+'" data-type="'+splitted[1]+'">'+icon+value+'</div>');
+            });
+            $("#copy").prop('disabled', false);
+        } else {
+            $("#copy-error").text("Items not selected.");
+            $("#copy").prop('disabled', true);
+        }
     });
     
     $("#button-copy2").click( function () {
@@ -137,17 +205,24 @@ $(document).ready( function() {
         $("#copy").show();
         $("#copy-descr").show();
         $("#copy-move").text("Copy elements");
+        $("#copy-error").text("");
         var selectionList = getSelection('#p2');
-        $.each(selectionList, function( index, value ) {
-            var splitted = index.split("-");
-            var icon = '';
-            if (splitted[1] === 'cat') {
-                icon = '<i class="glyphicon glyphicon-folder-open color-yellow"></i>&nbsp; '
-            } else {
-                icon = '<i class="glyphicon glyphicon-file color-gray"></i>&nbsp; '
-            }
-            $("#copy-list").append('<div class="list-group-item" data-id="'+splitted[2]+'" data-type="'+splitted[1]+'">'+icon+value+'</div>');
-        });
+        if (!jQuery.isEmptyObject(selectionList)) {
+            $.each(selectionList, function( index, value ) {
+                var splitted = index.split("-");
+                var icon = '';
+                if (splitted[1] === 'cat') {
+                    icon = '<i class="glyphicon glyphicon-folder-open color-yellow"></i>&nbsp; '
+                } else {
+                    icon = '<i class="glyphicon glyphicon-file color-gray"></i>&nbsp; '
+                }
+                $("#copy-list").append('<div class="list-group-item" data-id="'+splitted[2]+'" data-type="'+splitted[1]+'">'+icon+value+'</div>');
+            });
+            $("#copy").prop('disabled', false);
+        } else {
+            $("#copy-error").text("Items not selected.");
+            $("#copy").prop('disabled', true);
+        }
     });
     
     $("#button-move1").click( function () {
@@ -160,17 +235,25 @@ $(document).ready( function() {
         $("#copy").hide();
         $("#copy-move").text("Move elements");
         $("#copy-descr").hide();
+        $("#copy-error").text("");
         var selectionList = getSelection('#p1');
-        $.each(selectionList, function( index, value ) {
-            var splitted = index.split("-");
-            var icon = '';
-            if (splitted[1] === 'cat') {
-                icon = '<i class="glyphicon glyphicon-folder-open color-yellow"></i>&nbsp; '
-            } else {
-                icon = '<i class="glyphicon glyphicon-file color-gray"></i>&nbsp; '
-            }
-            $("#copy-list").append('<div class="list-group-item" data-id="'+splitted[2]+'" data-type="'+splitted[1]+'">'+icon+value+'</div>');
-        });
+        if (!jQuery.isEmptyObject(selectionList)) {
+            $.each(selectionList, function( index, value ) {
+                var splitted = index.split("-");
+                var icon = '';
+                if (splitted[1] === 'cat') {
+                    icon = '<i class="glyphicon glyphicon-folder-open color-yellow"></i>&nbsp; '
+                } else {
+                    icon = '<i class="glyphicon glyphicon-file color-gray"></i>&nbsp; '
+                }
+                $("#copy-list").append('<div class="list-group-item" data-id="'+splitted[2]+'" data-type="'+splitted[1]+'">'+icon+value+'</div>');
+            });
+            $("#move").prop('disabled', false);
+        } else {
+            $("#copy-error").text("Items not selected.");
+            $("#move").prop('disabled', true);
+        }
+        
     });
     
     $("#button-move2").click( function () {
@@ -183,17 +266,110 @@ $(document).ready( function() {
         $("#copy").hide();
         $("#copy-descr").hide();
         $("#copy-move").text("Move elements");
+        $("#copy-error").text("");
         var selectionList = getSelection('#p2');
-        $.each(selectionList, function( index, value ) {
-            var splitted = index.split("-");
-            var icon = '';
-            if (splitted[1] === 'cat') {
-                icon = '<i class="glyphicon glyphicon-folder-open color-yellow"></i>&nbsp; '
-            } else {
-                icon = '<i class="glyphicon glyphicon-file color-gray"></i>&nbsp; '
-            }
-            $("#copy-list").append('<div class="list-group-item" data-id="'+splitted[2]+'" data-type="'+splitted[1]+'">'+icon+value+'</div>');
-        });
+        if (!jQuery.isEmptyObject(selectionList)) {
+            $.each(selectionList, function( index, value ) {
+                var splitted = index.split("-");
+                var icon = '';
+                if (splitted[1] === 'cat') {
+                    icon = '<i class="glyphicon glyphicon-folder-open color-yellow"></i>&nbsp; '
+                } else {
+                    icon = '<i class="glyphicon glyphicon-file color-gray"></i>&nbsp; '
+                }
+                $("#copy-list").append('<div class="list-group-item" data-id="'+splitted[2]+'" data-type="'+splitted[1]+'">'+icon+value+'</div>');
+            });
+            $("#move").prop('disabled', false);
+        } else {
+            $("#copy-error").text("Items not selected.");
+            $("#move").prop('disabled', true);
+        }
+    });
+
+    $("#button-rename1").click( function() {
+        $("#rename-error").text("");
+        var selection = getSingleSelection('#p1');
+        if (!jQuery.isEmptyObject(selection)) {
+            var splitted = selection.id.split("-");
+            $("#rename_item_name").data("id", splitted[2]);
+            $("#rename_item_name").data("type", splitted[1]);
+            $("#rename_item_name").val(selection.name);
+            $("#rename_item_path").text($("#p1-path").text());
+            $("#rename_item_name").data("panel",'#p1');
+            $("#rename").prop('disabled', false);
+        } else {
+            $("#rename_item_name").data("id", 0);
+            $("#rename_item_name").val("");
+            $("#rename_item_path").text("");
+            $("#rename-error").text("Item not selected.");
+            $("#rename").prop('disabled', true);
+        }
+    });
+    
+    $("#button-rename2").click( function() {
+        $("#rename-error").text("");
+        var selection = getSingleSelection('#p2');
+        if (!jQuery.isEmptyObject(selection)) {
+            var splitted = selection.id.split("-");
+            $("#rename_item_name").data("id", splitted[2]);
+            $("#rename_item_name").data("type", splitted[1]);
+            $("#rename_item_name").val(selection.name);
+            $("#rename_item_path").text($("#p2-path").text());
+            $("#rename_item_name").data("panel",'#p2');
+            $("#rename").prop('disabled', false);
+        } else {
+            $("#rename_item_name").data("id", 0);
+            $("#rename_item_name").val("");
+            $("#rename_item_path").text("");
+            $("#rename-error").text("Item not selected.");
+            $("#rename").prop('disabled', true);
+        }
+    });
+    
+    $("#button-remove1").click( function () {
+        $("#remove_path").text($("#p1-path").text());
+        $("#remove-list").text("");
+        $("#remove-error").text("");
+        var selectionList = getStrictSelection('#p1');
+        if (!jQuery.isEmptyObject(selectionList)) {
+            $.each(selectionList, function( index, value ) {
+                var splitted = index.split("-");
+                var icon = '';
+                if (splitted[1] === 'cat') {
+                    icon = '<i class="glyphicon glyphicon-folder-open color-yellow"></i>&nbsp; '
+                } else {
+                    icon = '<i class="glyphicon glyphicon-file color-gray"></i>&nbsp; '
+                }
+                $("#remove-list").append('<div class="list-group-item" data-id="'+splitted[2]+'" data-type="'+splitted[1]+'">'+icon+value+'</div>');
+            });
+            $("#remove").prop('disabled', false);
+        } else {
+            $("#remove-error").text("Items not selected.");
+            $("#remove").prop('disabled', true);
+        }
+    });
+    
+    $("#button-remove2").click( function () {
+        $("#remove_path").text($("#p1-path").text());
+        $("#remove-list").text("");
+        $("#remove-error").text("");
+        var selectionList = getStrictSelection('#p2');
+        if (!jQuery.isEmptyObject(selectionList)) {
+            $.each(selectionList, function( index, value ) {
+                var splitted = index.split("-");
+                var icon = '';
+                if (splitted[1] === 'cat') {
+                    icon = '<i class="glyphicon glyphicon-folder-open color-yellow"></i>&nbsp; '
+                } else {
+                    icon = '<i class="glyphicon glyphicon-file color-gray"></i>&nbsp; '
+                }
+                $("#remove-list").append('<div class="list-group-item" data-id="'+splitted[2]+'" data-type="'+splitted[1]+'">'+icon+value+'</div>');
+            });
+            $("#remove").prop('disabled', false);
+        } else {
+            $("#remove-error").text("Items not selected.");
+            $("#remove").prop('disabled', true);
+        }
     });
     
     $body = $("body");
@@ -318,5 +494,29 @@ function getSelection(panel) {
             selection[selected.attr('id')] = selected.data('name');
         }
     }
+    return selection;
+}
+
+function getSingleSelection(panel) {
+    var selection = {};
+    var checked = $(panel + ' .list-group-item input:checked').first();
+    if (checked.length) {
+        selection.name = checked.parent().data('name');
+        selection.id = checked.parent().attr('id');
+    } else {
+        var selected = $(panel + ' .list-group-item.active');
+        if (selected.length) {
+            selection.name = selected.data('name');
+            selection.id = selected.attr('id');
+        }
+    }
+    return selection;
+}
+
+function getStrictSelection(panel) {
+    var selection = {};
+    $(panel + ' .list-group-item input:checked').each(function() {
+        selection[$(this).parent().attr('id')] = $(this).parent().data('name');
+    });
     return selection;
 }

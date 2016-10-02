@@ -221,7 +221,75 @@ class GoodsManager extends Model
         $toReturn['debug'] = self::$debug['db'];
         return $toReturn;
     }
+    
+        public static function renameAction($data)
+    {
+        $name = $data['name'];
+        $type = $data['type'];
+        $id = $data['id'];
+        $error = '';
+        $message = '';
+        if ($type == 'cat') {
+            $item = GoodsCategories::findOne($id);
+        } else {
+            $item = Goods::findOne($id);
+        }
+        
+        if (empty($item)) {
+            $error = "Error: Can't find item in DB.";
+        } elseif (!empty($name)) {
+            $item->name = $name;
+            if (!self::saveModelUsingTransaction($item)) {
+                $error = 'Error: DB write error.';
+            }
+            $message = 'Item ' . $name . ' renamed';
+        } else {
+            $error = 'Name can\'t be empty.';
+        }
+        
+        $toReturn['message'] = $message;
+        $toReturn['error'] = $error;
+        $toReturn['p1_force_update'] = 1;
+        $toReturn['p2_force_update'] = 1;
+        $toReturn['p1'] = self::makeTabData($data['p1_cat']); 
+        $toReturn['p2'] = self::makeTabData($data['p2_cat']);
+        $toReturn['debug'] = self::$debug['db'];
+        return $toReturn;
+    }
 
+    public static function removeAction($data)
+    {
+        $error = '';
+        $message = '';
+
+        $goods_categories = $data['entries']['categories'];
+        $goods = $data['entries']['items'];
+        
+        $transaction = GoodsCategories::getDb()->beginTransaction();
+        try {
+            if (!empty($goods_categories)) {
+                GoodsCategories::deleteAll(['id' => $goods_categories]);
+            }
+            if (!empty($goods)) {
+                Goods::deleteAll(['id' => $goods]);
+            }
+            $transaction->commit();
+        } catch(\Exception $e) {
+            $transaction->rollBack();
+            self::$debug['db'] = $e->getMessage();
+            $error .= 'Error: DB write error.';
+        }
+
+        $toReturn['message'] = $message;
+        $toReturn['error'] = $error;
+        $toReturn['p1_force_update'] = 1;
+        $toReturn['p2_force_update'] = 1;
+        $toReturn['p1'] = self::makeTabData($data['p1_cat']); 
+        $toReturn['p2'] = self::makeTabData($data['p2_cat']);
+        $toReturn['debug'] = self::$debug['db'];
+        return $toReturn;
+    }
+    
     public static function saveModelUsingTransaction(\yii\db\ActiveRecord $model)
     {
         $transaction = $model->getDb()->beginTransaction();
