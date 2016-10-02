@@ -165,18 +165,27 @@ $(document).ready( function() {
         $("#new_item_name").data("panel",'#p2');
     });
     
-    $("#button-copy1").click( function () {
-        $("#copy_from_path").text($("#p1-path").text());
-        $("#copy_to_path").text($("#p2-path").text());
-        $("#copy_from_path").data('category', $("#p1-path").data("category"));
-        $("#copy_to_path").data('category', $("#p2-path").data("category"));
+    $("#button-copy1, #button-copy2").click( function () {
+        var but_id = $(this).attr("id");
+        if (but_id === 'button-copy1') {
+            $("#copy_from_path").text($("#p1-path").text());
+            $("#copy_to_path").text($("#p2-path").text());
+            $("#copy_from_path").data('category', $("#p1-path").data("category"));
+            $("#copy_to_path").data('category', $("#p2-path").data("category"));
+            var selectionList = getSelection('#p1');
+        } else {
+            $("#copy_from_path").text($("#p2-path").text());
+            $("#copy_to_path").text($("#p1-path").text());
+            $("#copy_from_path").data('category', $("#p2-path").data("category"));
+            $("#copy_to_path").data('category', $("#p1-path").data("category"));
+            var selectionList = getSelection('#p2');
+        }
         $("#copy-list").text("");
         $("#move").hide();
         $("#copy").show();
         $("#copy-descr").show();
         $("#copy-move").text("Copy elements");
         $("#copy-error").text("");
-        var selectionList = getSelection('#p1');
         if (!jQuery.isEmptyObject(selectionList)) {
             $.each(selectionList, function( index, value ) {
                 var splitted = index.split("-");
@@ -225,18 +234,28 @@ $(document).ready( function() {
         }
     });
     
-    $("#button-move1").click( function () {
-        $("#copy_from_path").text($("#p1-path").text());
-        $("#copy_to_path").text($("#p2-path").text());
-        $("#copy_from_path").data('category', $("#p1-path").data("category"));
-        $("#copy_to_path").data('category', $("#p2-path").data("category"));
+    $("#button-move1, #button-move2").click( function () {
+        var but_id = $(this).attr("id");
+        if (but_id === 'button-move1') {
+            $("#copy_from_path").text($("#p1-path").text());
+            $("#copy_to_path").text($("#p2-path").text());
+            $("#copy_from_path").data('category', $("#p1-path").data("category"));
+            $("#copy_to_path").data('category', $("#p2-path").data("category"));
+            var selectionList = getSelection('#p1');
+        } else {
+            $("#copy_from_path").text($("#p2-path").text());
+            $("#copy_to_path").text($("#p1-path").text());
+            $("#copy_from_path").data('category', $("#p2-path").data("category"));
+            $("#copy_to_path").data('category', $("#p1-path").data("category"));
+            var selectionList = getSelection('#p2');
+        }
         $("#copy-list").text("");
         $("#move").show();
         $("#copy").hide();
         $("#copy-move").text("Move elements");
         $("#copy-descr").hide();
         $("#copy-error").text("");
-        var selectionList = getSelection('#p1');
+        
         if (!jQuery.isEmptyObject(selectionList)) {
             $.each(selectionList, function( index, value ) {
                 var splitted = index.split("-");
@@ -255,67 +274,26 @@ $(document).ready( function() {
         }
         
     });
-    
-    $("#button-move2").click( function () {
-        $("#copy_from_path").text($("#p2-path").text());
-        $("#copy_to_path").text($("#p1-path").text());
-        $("#copy_from_path").data('category', $("#p2-path").data("category"));
-        $("#copy_to_path").data('category', $("#p1-path").data("category"));
-        $("#copy-list").text("");
-        $("#move").show();
-        $("#copy").hide();
-        $("#copy-descr").hide();
-        $("#copy-move").text("Move elements");
-        $("#copy-error").text("");
-        var selectionList = getSelection('#p2');
-        if (!jQuery.isEmptyObject(selectionList)) {
-            $.each(selectionList, function( index, value ) {
-                var splitted = index.split("-");
-                var icon = '';
-                if (splitted[1] === 'cat') {
-                    icon = '<i class="glyphicon glyphicon-folder-open color-yellow"></i>&nbsp; '
-                } else {
-                    icon = '<i class="glyphicon glyphicon-file color-gray"></i>&nbsp; '
-                }
-                $("#copy-list").append('<div class="list-group-item" data-id="'+splitted[2]+'" data-type="'+splitted[1]+'">'+icon+value+'</div>');
-            });
-            $("#move").prop('disabled', false);
-        } else {
-            $("#copy-error").text("Items not selected.");
-            $("#move").prop('disabled', true);
-        }
-    });
 
-    $("#button-rename1").click( function() {
-        $("#rename-error").text("");
-        var selection = getSingleSelection('#p1');
-        if (!jQuery.isEmptyObject(selection)) {
-            var splitted = selection.id.split("-");
-            $("#rename_item_name").data("id", splitted[2]);
-            $("#rename_item_name").data("type", splitted[1]);
-            $("#rename_item_name").val(selection.name);
+    $("#button-rename1, #button-rename2").click( function() {
+        var but_id = $(this).attr("id");
+        if (but_id === 'button-rename1') {
+            var selection = getSingleSelection('#p1');
             $("#rename_item_path").text($("#p1-path").text());
             $("#rename_item_name").data("panel",'#p1');
-            $("#rename").prop('disabled', false);
         } else {
-            $("#rename_item_name").data("id", 0);
-            $("#rename_item_name").val("");
-            $("#rename_item_path").text("");
-            $("#rename-error").text("Item not selected.");
-            $("#rename").prop('disabled', true);
+            var selection = getSingleSelection('#p2');
+            $("#rename_item_path").text($("#p2-path").text());
+            $("#rename_item_name").data("panel",'#p2');
         }
-    });
-    
-    $("#button-rename2").click( function() {
         $("#rename-error").text("");
-        var selection = getSingleSelection('#p2');
+        
         if (!jQuery.isEmptyObject(selection)) {
             var splitted = selection.id.split("-");
             $("#rename_item_name").data("id", splitted[2]);
             $("#rename_item_name").data("type", splitted[1]);
             $("#rename_item_name").val(selection.name);
-            $("#rename_item_path").text($("#p2-path").text());
-            $("#rename_item_name").data("panel",'#p2');
+            
             $("#rename").prop('disabled', false);
         } else {
             $("#rename_item_name").data("id", 0);
@@ -326,11 +304,17 @@ $(document).ready( function() {
         }
     });
     
-    $("#button-remove1").click( function () {
-        $("#remove_path").text($("#p1-path").text());
+    $("#button-remove1, #button-remove2").click( function () {
+        var but_id = $(this).attr("id");
+        if (but_id === 'button-remove1') {
+            var selectionList = getStrictSelection('#p1');
+            $("#remove_path").text($("#p1-path").text());
+        } else {
+            var selectionList = getStrictSelection('#p2');
+            $("#remove_path").text($("#p2-path").text());
+        }
         $("#remove-list").text("");
         $("#remove-error").text("");
-        var selectionList = getStrictSelection('#p1');
         if (!jQuery.isEmptyObject(selectionList)) {
             $.each(selectionList, function( index, value ) {
                 var splitted = index.split("-");
@@ -349,33 +333,16 @@ $(document).ready( function() {
         }
     });
     
-    $("#button-remove2").click( function () {
-        $("#remove_path").text($("#p1-path").text());
-        $("#remove-list").text("");
-        $("#remove-error").text("");
-        var selectionList = getStrictSelection('#p2');
-        if (!jQuery.isEmptyObject(selectionList)) {
-            $.each(selectionList, function( index, value ) {
-                var splitted = index.split("-");
-                var icon = '';
-                if (splitted[1] === 'cat') {
-                    icon = '<i class="glyphicon glyphicon-folder-open color-yellow"></i>&nbsp; '
-                } else {
-                    icon = '<i class="glyphicon glyphicon-file color-gray"></i>&nbsp; '
-                }
-                $("#remove-list").append('<div class="list-group-item" data-id="'+splitted[2]+'" data-type="'+splitted[1]+'">'+icon+value+'</div>');
-            });
-            $("#remove").prop('disabled', false);
-        } else {
-            $("#remove-error").text("Items not selected.");
-            $("#remove").prop('disabled', true);
-        }
-    });
-    
-    $("#button-log1").click( function() {
+    $("#button-log1, #button-log2").click( function() {
+        var but_id = $(this).attr("id");
         $("#log-error").text('');
         $('#log-list').empty();
-        var selection = getSingleSelection('#p1');
+        if (but_id === 'button-log1') {
+            var selection = getSingleSelection('#p1');
+        } else {
+            var selection = getSingleSelection('#p2');
+        }
+        
         if (!jQuery.isEmptyObject(selection)) {
             var splitted = selection.id.split("-");
             var getLogData = {};
