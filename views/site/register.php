@@ -3,15 +3,16 @@
 /* @var $this yii\web\View */
 /* @var $form yii\bootstrap\ActiveForm */
 /* @var $model app\models\LoginForm */
-
+use app\assets\LoginAsset;
 use yii\helpers\Html;
 use yii\bootstrap\ActiveForm;
 
+LoginAsset::register($this);
 $this->title = 'Register';
 //$this->params['breadcrumbs'][] = $this->title;
 ?>
-<div class="">
-    <div class="site-login col-lg-4 col-lg-offset-4 vertical-center">
+<div class="vcenter">
+    <div class="site-login">
         <h1><?= Html::encode($this->title) ?></h1>
 
         <p>Please fill out the following fields to register:</p>
@@ -34,7 +35,7 @@ $this->title = 'Register';
             <?= $form->field($model, 'confirmPassword')->passwordInput(['required' => true]) ?>
 
             <div class="form-group">
-                <div class="col-lg-offset-1 col-lg-11">
+                <div>
                     <?= Html::submitButton('Register', ['class' => 'btn btn-primary', 'name' => 'login-button']) ?>
                 </div>
             </div>

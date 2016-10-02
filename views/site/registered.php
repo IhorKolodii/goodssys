@@ -5,9 +5,10 @@
 /* @var $name string */
 /* @var $message string */
 /* @var $exception Exception */
-
+use app\assets\LoginAsset;
 use yii\helpers\Html;
 
+LoginAsset::register($this);
 $this->title = 'Registered';
 ?>
 <div class="site-login">

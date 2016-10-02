@@ -1,0 +1,24 @@
+.footer {
+    position: fixed;
+    bottom: 0;
+    height: 60px;
+    width: 100%;
+    background-color: #f5f5f5;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+.vcenter {
+    min-height: 75%;  /* Fallback for browsers do NOT support vh unit */
+    min-height: 75vh; /* These two lines are counted as one :-)       */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.site-login {
+    display: inline-block;
+    width: 50%;
+    min-width: 200px;
+    max-width: 400px;
+}
